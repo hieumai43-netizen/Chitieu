@@ -193,11 +193,15 @@ button {
 }
 
 .transaction-list {
-  max-height: 128px;
+  height: 132px;
+  max-height: 132px;
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: 14px;
   background: #fbfdff;
+  border: 1px solid #e7eef8;
+  padding-right: 4px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .transaction-list::-webkit-scrollbar,
@@ -404,5 +408,52 @@ textarea::-webkit-scrollbar-thumb {
   .transaction-item {
     grid-template-columns: 38px minmax(0, 1fr) 72px 20px;
     font-size: 11px;
+  }
+}
+
+
+/* ===== Fix v1.2: danh sách thu/chi có thanh cuộn riêng, không làm tràn màn hình ===== */
+#incomeList,
+#expenseList {
+  height: 132px;
+  max-height: 132px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#incomeList:empty,
+#expenseList:empty {
+  height: 42px;
+}
+
+@media (max-width: 420px) {
+  .transaction-list,
+  #incomeList,
+  #expenseList {
+    height: 118px;
+    max-height: 118px;
+  }
+
+  #incomeList:empty,
+  #expenseList:empty {
+    height: 38px;
+  }
+}
+
+@media (max-height: 740px) {
+  .transaction-list,
+  #incomeList,
+  #expenseList {
+    height: 96px;
+    max-height: 96px;
+  }
+
+  .panel {
+    margin: 9px 0;
+  }
+
+  .top-card {
+    margin-bottom: 9px;
   }
 }
