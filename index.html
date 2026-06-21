@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sổ chi tiêu gia đình</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4a7db8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Family Money">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+  <main class="phone">
+    <section class="top-card">
+      <div class="month-row">
+        <select id="monthSelect"></select>
+        <input id="yearInput" type="number" value="2026" />
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-box">Tổng thu:<br><b id="totalIncome">0円</b></div>
+        <div class="summary-box">Tổng chi:<br><b id="totalExpense">0円</b></div>
+      </div>
+
+      <div class="remain-box">
+        <div class="remain-title">Còn lại</div>
+        <div>Tuần1: <b id="week1">0円</b></div>
+        <div>Tuần2: <b id="week2">0円</b></div>
+        <div>Tuần3: <b id="week3">0円</b></div>
+        <div>Tuần4: <b id="week4">0円</b></div>
+        <br>
+        <div>Tổng kết tháng: <b id="monthBalance">0円</b></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">Khoản thu</div>
+      <button class="add-btn" onclick="openForm('income')">＋ Nhập khoản thu</button>
+      <div id="incomeList" class="transaction-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">Khoản chi</div>
+      <button class="add-btn expense" onclick="openForm('expense')">＋ Nhập khoản chi</button>
+      <div id="expenseList" class="transaction-list"></div>
+    </section>
+
+    <section class="panel note-panel">
+      <div class="panel-title">Ghi chú</div>
+      <textarea id="noteInput" placeholder="Ví dụ: + Hiếu vay 30000\n+ Tiền thịt nợ 2000"></textarea>
+    </section>
+  </main>
+
+  <div id="modal" class="modal hidden">
+    <div class="form-box">
+      <h3 id="formTitle">Nhập khoản</h3>
+      <label>Ngày</label>
+      <input id="dateInput" type="date" />
+      <label>Nội dung</label>
+      <input id="nameInput" type="text" placeholder="Ví dụ: Lương, ăn uống..." />
+      <label>Số tiền</label>
+      <input id="amountInput" type="number" placeholder="Ví dụ: 10000" />
+      <div class="form-actions">
+        <button onclick="closeForm()">Hủy</button>
+        <button class="save-btn" onclick="saveTransaction()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
