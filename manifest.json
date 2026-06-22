@@ -1,21 +1,24 @@
 {
-  "name": "Family Money",
-  "short_name": "Money",
-  "start_url": "./",
+  "name": "Sổ chi tiêu gia đình",
+  "short_name": "Chi tiêu",
+  "description": "Ứng dụng ghi thu chi gia đình.",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4a7db8",
+  "background_color": "#f8fbff",
+  "theme_color": "#2563eb",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
