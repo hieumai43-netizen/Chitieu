@@ -1,139 +1,216 @@
-const monthSelect = document.getElementById('monthSelect');
-const yearInput = document.getElementById('yearInput');
-const modal = document.getElementById('modal');
-const formTitle = document.getElementById('formTitle');
-const dateInput = document.getElementById('dateInput');
-const nameInput = document.getElementById('nameInput');
-const amountInput = document.getElementById('amountInput');
-const noteInput = document.getElementById('noteInput');
+const STORAGE_KEYS = {
+  transactions: 'expense_app_transactions_v3',
+  expenseNote: 'expense_app_expense_note_v3',
+  mainNote: 'expense_app_main_note_v3',
+  activeTab: 'expense_app_active_tab_v3'
+};
 
-let currentType = 'income';
-let transactions = JSON.parse(localStorage.getItem('familyMoneyTransactions') || '[]');
-let notes = JSON.parse(localStorage.getItem('familyMoneyNotes') || '{}');
+let transactions = JSON.parse(localStorage.getItem(STORAGE_KEYS.transactions) || '[]');
+let modalType = 'income';
 
-function formatYen(num) {
-  return Number(num || 0).toLocaleString('ja-JP') + '円';
+const $ = (id) => document.getElementById(id);
+
+function yen(amount) {
+  return `${Number(amount || 0).toLocaleString('ja-JP')}円`;
 }
 
-function initMonths() {
-  for (let i = 1; i <= 12; i++) {
-    const option = document.createElement('option');
-    option.value = i;
-    option.textContent = `Tháng : ${i}`;
-    monthSelect.appendChild(option);
-  }
-  const now = new Date();
-  monthSelect.value = now.getMonth() + 1;
-  yearInput.value = now.getFullYear();
+function saveTransactions() {
+  localStorage.setItem(STORAGE_KEYS.transactions, JSON.stringify(transactions));
 }
 
-function selectedKey() {
-  return `${yearInput.value}-${String(monthSelect.value).padStart(2, '0')}`;
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
 
-function getFilteredTransactions() {
-  const key = selectedKey();
-  return transactions.filter(t => t.date && t.date.startsWith(key));
+function currentMonth() {
+  return Number($('monthInput').value);
 }
 
-function render() {
-  const key = selectedKey();
-  const list = getFilteredTransactions();
-  const incomes = list.filter(t => t.type === 'income');
-  const expenses = list.filter(t => t.type === 'expense');
-  const totalIncome = incomes.reduce((s, t) => s + Number(t.amount), 0);
-  const totalExpense = expenses.reduce((s, t) => s + Number(t.amount), 0);
-
-  document.getElementById('totalIncome').textContent = formatYen(totalIncome);
-  document.getElementById('totalExpense').textContent = formatYen(totalExpense);
-  document.getElementById('monthBalance').textContent = formatYen(totalIncome - totalExpense);
-
-  for (let w = 1; w <= 4; w++) {
-    const weekList = list.filter(t => getWeekOfMonth(t.date) === w);
-    const wi = weekList.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
-    const we = weekList.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
-    document.getElementById(`week${w}`).textContent = formatYen(wi - we);
-  }
-
-  renderList('incomeList', incomes);
-  renderList('expenseList', expenses);
-  noteInput.value = notes[key] || '';
+function currentYear() {
+  return Number($('yearInput').value);
 }
 
-function renderList(elementId, list) {
-  const box = document.getElementById(elementId);
-  box.innerHTML = '';
-  list.sort((a, b) => a.date.localeCompare(b.date)).forEach(t => {
-    const row = document.createElement('div');
-    row.className = 'transaction-item';
-    row.innerHTML = `
-      <span>${t.date.slice(5)}</span>
-      <span>${escapeHtml(t.name)}</span>
-      <span class="amount">${formatYen(t.amount)}</span>
-      <button class="delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
-    `;
-    box.appendChild(row);
-  });
+function sameMonth(item) {
+  const d = new Date(item.date || Date.now());
+  return d.getFullYear() === currentYear() && d.getMonth() + 1 === currentMonth();
 }
 
-function getWeekOfMonth(dateStr) {
-  const day = Number(dateStr.slice(8, 10));
+function weekNumber(dateText) {
+  const d = new Date(dateText || Date.now());
+  const day = d.getDate();
   if (day <= 7) return 1;
   if (day <= 14) return 2;
   if (day <= 21) return 3;
   return 4;
 }
 
-function openForm(type) {
-  currentType = type;
-  formTitle.textContent = type === 'income' ? 'Nhập khoản thu' : 'Nhập khoản chi';
-  const day = new Date().getDate();
-  dateInput.value = `${yearInput.value}-${String(monthSelect.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  nameInput.value = '';
-  amountInput.value = '';
-  modal.classList.remove('hidden');
+function renderMoney() {
+  const monthItems = transactions.filter(sameMonth);
+  const incomes = monthItems.filter(item => item.type === 'income');
+  const expenses = monthItems.filter(item => item.type === 'expense');
+
+  renderList($('incomeList'), incomes);
+  renderList($('expenseList'), expenses);
+
+  const totalIncome = incomes.reduce((sum, item) => sum + item.amount, 0);
+  const totalExpense = expenses.reduce((sum, item) => sum + item.amount, 0);
+
+  $('totalIncome').textContent = yen(totalIncome);
+  $('totalExpense').textContent = yen(totalExpense);
+  $('balance').textContent = yen(totalIncome - totalExpense);
+
+  for (let i = 1; i <= 4; i++) {
+    const weekItems = monthItems.filter(item => weekNumber(item.date) === i);
+    const weekIncome = weekItems.filter(item => item.type === 'income').reduce((sum, item) => sum + item.amount, 0);
+    const weekExpense = weekItems.filter(item => item.type === 'expense').reduce((sum, item) => sum + item.amount, 0);
+    $(`week${i}`).textContent = yen(weekIncome - weekExpense);
+  }
 }
 
-function closeForm() {
-  modal.classList.add('hidden');
-}
+function renderList(container, list) {
+  container.innerHTML = '';
 
-function saveTransaction() {
-  const name = nameInput.value.trim();
-  const amount = Number(amountInput.value);
-  if (!dateInput.value || !name || !amount) {
-    alert('Bạn nhập đủ ngày, nội dung và số tiền nhé.');
+  if (list.length === 0) {
+    container.innerHTML = '<div class="empty">Chưa có dữ liệu</div>';
     return;
   }
-  transactions.push({
-    id: Date.now().toString(),
-    type: currentType,
-    date: dateInput.value,
-    name,
-    amount
+
+  list.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `
+      <span>${escapeHtml(item.title)}</span>
+      <span class="item-money">${yen(item.amount)}</span>
+      <button class="delete-btn" data-id="${item.id}">X</button>
+    `;
+    container.appendChild(div);
   });
-  localStorage.setItem('familyMoneyTransactions', JSON.stringify(transactions));
-  closeForm();
-  render();
+}
+
+function todayTextForInput() {
+  const day = String(new Date().getDate()).padStart(2, '0');
+  return `${currentYear()}/${String(currentMonth()).padStart(2, '0')}/${day}`;
+}
+
+function todayTextForData() {
+  const day = String(new Date().getDate()).padStart(2, '0');
+  return `${currentYear()}-${String(currentMonth()).padStart(2, '0')}-${day}`;
+}
+
+function addTransaction(type) {
+  modalType = type;
+  $('modalTitle').textContent = type === 'income' ? 'Nhập khoản thu' : 'Nhập khoản chi';
+  $('modalDate').value = todayTextForInput();
+  $('modalTitleInput').value = '';
+  $('modalAmountInput').value = '';
+  $('entryModal').classList.add('show');
+  $('entryModal').setAttribute('aria-hidden', 'false');
+  setTimeout(() => $('modalTitleInput').focus(), 50);
+}
+
+function closeModal() {
+  $('entryModal').classList.remove('show');
+  $('entryModal').setAttribute('aria-hidden', 'true');
+}
+
+function saveModalTransaction() {
+  const title = $('modalTitleInput').value.trim();
+  const amount = Number($('modalAmountInput').value);
+
+  if (!title || !amount || amount <= 0) {
+    alert('Bạn nhập đủ nội dung và số tiền lớn hơn 0 nhé.');
+    return;
+  }
+
+  transactions.unshift({
+    id: Date.now().toString(),
+    type: modalType,
+    title,
+    amount,
+    date: todayTextForData()
+  });
+
+  saveTransactions();
+  renderMoney();
+  closeModal();
 }
 
 function deleteTransaction(id) {
-  if (!confirm('Xóa dòng này nhé?')) return;
-  transactions = transactions.filter(t => t.id !== id);
-  localStorage.setItem('familyMoneyTransactions', JSON.stringify(transactions));
-  render();
+  transactions = transactions.filter(item => item.id !== id);
+  saveTransactions();
+  renderMoney();
 }
 
-function escapeHtml(text) {
-  return text.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function initMonthYear() {
+  const now = new Date();
+  for (let i = 1; i <= 12; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = i;
+    $('monthInput').appendChild(option);
+  }
+  $('monthInput').value = now.getMonth() + 1;
+  $('yearInput').value = now.getFullYear();
+
+  $('monthInput').addEventListener('change', renderMoney);
+  $('yearInput').addEventListener('input', renderMoney);
 }
 
-monthSelect.addEventListener('change', render);
-yearInput.addEventListener('change', render);
-noteInput.addEventListener('input', () => {
-  notes[selectedKey()] = noteInput.value;
-  localStorage.setItem('familyMoneyNotes', JSON.stringify(notes));
+function openTab(tabId) {
+  document.querySelector('.app').classList.toggle('note-mode', tabId === 'noteTab');
+  document.querySelector('.app').classList.toggle('expense-mode', tabId === 'expenseTab');
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === tabId);
+  });
+  localStorage.setItem(STORAGE_KEYS.activeTab, tabId);
+}
+
+function initTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => openTab(btn.dataset.tab));
+  });
+  openTab(localStorage.getItem(STORAGE_KEYS.activeTab) || 'expenseTab');
+}
+
+function initNotes() {
+  $('expenseNote').value = localStorage.getItem(STORAGE_KEYS.expenseNote) || '';
+  $('mainNote').value = localStorage.getItem(STORAGE_KEYS.mainNote) || '';
+
+  $('expenseNote').addEventListener('input', () => {
+    localStorage.setItem(STORAGE_KEYS.expenseNote, $('expenseNote').value);
+  });
+
+  $('mainNote').addEventListener('input', () => {
+    localStorage.setItem(STORAGE_KEYS.mainNote, $('mainNote').value);
+  });
+}
+
+$('addIncomeBtn').addEventListener('click', () => addTransaction('income'));
+$('addExpenseBtn').addEventListener('click', () => addTransaction('expense'));
+$('cancelModalBtn').addEventListener('click', closeModal);
+$('saveModalBtn').addEventListener('click', saveModalTransaction);
+$('entryModal').addEventListener('click', (event) => {
+  if (event.target.id === 'entryModal') closeModal();
+});
+$('modalAmountInput').addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') saveModalTransaction();
 });
 
-initMonths();
-render();
+document.addEventListener('click', (event) => {
+  const btn = event.target.closest('.delete-btn');
+  if (!btn) return;
+  deleteTransaction(btn.dataset.id);
+});
+
+initMonthYear();
+initTabs();
+initNotes();
+renderMoney();

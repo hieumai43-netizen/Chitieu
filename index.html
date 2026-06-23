@@ -3,69 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sổ chi tiêu gia đình</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon.png">
+  <title>Quản lý chi tiêu</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="phone">
-    <section class="top-card">
-      <div class="month-row">
-        <select id="monthSelect"></select>
-        <input id="yearInput" type="number" value="2026" />
-      </div>
+  <div class="app">
+    <nav class="top-tabs" aria-label="Chọn tab">
+      <button class="tab-btn active" data-tab="expenseTab">Chi tiêu</button>
+      <button class="tab-btn" data-tab="noteTab">Ghi chú</button>
+    </nav>
 
-      <div class="summary-row">
-        <div class="summary-box">Tổng thu:<br><b id="totalIncome">0円</b></div>
-        <div class="summary-box">Tổng chi:<br><b id="totalExpense">0円</b></div>
-      </div>
+    <main id="expenseTab" class="tab-panel active">
+      <section class="filter-row">
+        <label class="month-box">Tháng :
+          <select id="monthInput"></select>
+        </label>
+        <input id="yearInput" class="year-box" type="number" inputmode="numeric" />
+      </section>
 
-      <div class="remain-box">
-        <div class="remain-title">Còn lại</div>
-        <div>Tuần1: <b id="week1">0円</b></div>
-        <div>Tuần2: <b id="week2">0円</b></div>
-        <div>Tuần3: <b id="week3">0円</b></div>
-        <div>Tuần4: <b id="week4">0円</b></div>
-        <br>
-        <div>Tổng kết tháng: <b id="monthBalance">0円</b></div>
-      </div>
-    </section>
+      <section class="total-row">
+        <div class="total-card income-soft">
+          <span>Tổng thu:</span>
+          <strong id="totalIncome">0円</strong>
+        </div>
+        <div class="total-card expense-soft">
+          <span>Tổng chi:</span>
+          <strong id="totalExpense">0円</strong>
+        </div>
+      </section>
 
-    <section class="panel income-panel">
-      <div class="panel-head">
-        <div class="panel-title">Khoản thu</div>
-        <button class="add-btn" onclick="openForm('income')">＋ Nhập khoản thu</button>
-      </div>
-      <div id="incomeList" class="transaction-list"></div>
-    </section>
+      <section class="balance-card">
+        <h3>Còn lại</h3>
+        <div class="week-grid">
+          <span>Tuần1: <b id="week1">0円</b></span>
+          <span>Tuần2: <b id="week2">0円</b></span>
+          <span>Tuần3: <b id="week3">0円</b></span>
+          <span>Tuần4: <b id="week4">0円</b></span>
+        </div>
+        <p>Tổng kết tháng: <b id="balance">0円</b></p>
+      </section>
 
-    <section class="panel expense-panel">
-      <div class="panel-head">
-        <div class="panel-title">Khoản chi</div>
-        <button class="add-btn expense" onclick="openForm('expense')">＋ Nhập khoản chi</button>
-      </div>
-      <div id="expenseList" class="transaction-list"></div>
-    </section>
+      <section class="money-box">
+        <div class="box-head">
+          <h2>Khoản thu</h2>
+          <button id="addIncomeBtn" class="add-btn blue-btn">+ Nhập khoản thu</button>
+        </div>
+        <div id="incomeList" class="money-list"></div>
+      </section>
 
-    <section class="panel note-panel">
-      <div class="panel-title">Ghi chú</div>
-      <textarea id="noteInput" placeholder="Ví dụ: + Hiếu vay 30000\n+ Tiền thịt nợ 2000"></textarea>
-    </section>
-  </main>
+      <section class="money-box">
+        <div class="box-head">
+          <h2>Khoản chi</h2>
+          <button id="addExpenseBtn" class="add-btn red-btn">+ Nhập khoản chi</button>
+        </div>
+        <div id="expenseList" class="money-list"></div>
+      </section>
 
-  <div id="modal" class="modal hidden">
-    <div class="form-box">
-      <h3 id="formTitle">Nhập khoản</h3>
-      <label>Ngày</label>
-      <input id="dateInput" type="date" />
-      <label>Nội dung</label>
-      <input id="nameInput" type="text" placeholder="Ví dụ: Lương, ăn uống..." />
-      <label>Số tiền</label>
-      <input id="amountInput" type="number" placeholder="Ví dụ: 10000" />
-      <div class="form-actions">
-        <button onclick="closeForm()">Hủy</button>
-        <button class="save-btn" onclick="saveTransaction()">Lưu</button>
+      <section class="note-small-card">
+        <h2>Ghi chú</h2>
+        <textarea id="expenseNote" placeholder="Ví dụ: + Hiếu vay 30000\n+ Tiền thị nợ 2000"></textarea>
+      </section>
+    </main>
+
+    <main id="noteTab" class="tab-panel">
+      <section class="big-note-card">
+        <textarea id="mainNote" spellcheck="false" placeholder="+ Nhập đường Link liên kết&#10;&#10;① Chusen Poke&#10;https://www.channelnewsasia.com/&#10;&#10;② Chusen OP&#10;https://www.channelnewsasia.com/&#10;&#10;③"></textarea>
+      </section>
+    </main>
+  </div>
+
+
+
+  <div id="entryModal" class="modal-overlay" aria-hidden="true">
+    <div class="entry-modal" role="dialog" aria-modal="true">
+      <h1 id="modalTitle">Nhập khoản thu</h1>
+
+      <label class="modal-label" for="modalDate">Ngày</label>
+      <input id="modalDate" class="modal-date" type="text" readonly />
+
+      <label class="modal-label" for="modalTitleInput">Nội dung</label>
+      <input id="modalTitleInput" class="modal-input" type="text" placeholder="Ví dụ: Lương, ăn uống..." />
+
+      <label class="modal-label" for="modalAmountInput">Số tiền</label>
+      <input id="modalAmountInput" class="modal-input" type="number" inputmode="numeric" placeholder="Ví dụ: 10000" />
+
+      <div class="modal-actions">
+        <button id="cancelModalBtn" class="modal-btn cancel-btn" type="button">Hủy</button>
+        <button id="saveModalBtn" class="modal-btn save-btn" type="button">Lưu</button>
       </div>
     </div>
   </div>
