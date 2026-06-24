@@ -27,6 +27,28 @@ function escapeHtml(text) {
     .replaceAll("'", '&#039;');
 }
 
+
+function shortDate(dateText) {
+  const d = new Date(dateText || Date.now());
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${month}/${day}`;
+}
+
+function linkifyText(text) {
+  const safe = escapeHtml(text);
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  return safe.replace(urlRegex, '<a class="note-link" href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+
+function setMainNoteText(text) {
+  $('mainNote').innerHTML = linkifyText(text || '');
+}
+
+function getMainNoteText() {
+  return $('mainNote').innerText.replace(/\n$/, '');
+}
+
 function currentMonth() {
   return Number($('monthInput').value);
 }
@@ -84,7 +106,8 @@ function renderList(container, list) {
     const div = document.createElement('div');
     div.className = 'item';
     div.innerHTML = `
-      <span>${escapeHtml(item.title)}</span>
+      <span class="item-date">${shortDate(item.date)}</span>
+      <span class="item-title">${escapeHtml(item.title)}</span>
       <span class="item-money">${yen(item.amount)}</span>
       <button class="delete-btn" data-id="${item.id}">X</button>
     `;
@@ -182,14 +205,28 @@ function initTabs() {
 
 function initNotes() {
   $('expenseNote').value = localStorage.getItem(STORAGE_KEYS.expenseNote) || '';
-  $('mainNote').value = localStorage.getItem(STORAGE_KEYS.mainNote) || '';
+  setMainNoteText(localStorage.getItem(STORAGE_KEYS.mainNote) || '');
 
   $('expenseNote').addEventListener('input', () => {
     localStorage.setItem(STORAGE_KEYS.expenseNote, $('expenseNote').value);
   });
 
   $('mainNote').addEventListener('input', () => {
-    localStorage.setItem(STORAGE_KEYS.mainNote, $('mainNote').value);
+    localStorage.setItem(STORAGE_KEYS.mainNote, getMainNoteText());
+  });
+
+  $('mainNote').addEventListener('blur', () => {
+    const text = getMainNoteText();
+    localStorage.setItem(STORAGE_KEYS.mainNote, text);
+    setMainNoteText(text);
+  });
+
+
+  $('mainNote').addEventListener('click', (event) => {
+    const link = event.target.closest('a');
+    if (!link) return;
+    event.preventDefault();
+    window.open(link.href, '_blank', 'noopener,noreferrer');
   });
 }
 
