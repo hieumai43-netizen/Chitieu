@@ -17,9 +17,17 @@
   --text: #17212f;
 }
 
+html,
 body {
   margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #ffffff;
   font-family: Arial, Helvetica, sans-serif;
   color: var(--text);
@@ -27,10 +35,14 @@ body {
 
 .app {
   width: min(430px, 100%);
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   margin: 0 auto;
-  padding: 28px 8px 14px;
+  padding: 24px 8px 10px;
   background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .app.note-mode,
@@ -44,8 +56,10 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 54px;
   padding: 0 28px 10px;
-  margin: 0 0 8px;
+  margin: 0 0 6px;
+  flex: 0 0 auto;
 }
+
 
 .tab-btn {
   height: 32px;
@@ -71,17 +85,35 @@ body {
 
 .tab-panel {
   display: none;
+  min-height: 0;
 }
 
 .tab-panel.active {
   display: block;
 }
 
+#expenseTab.active {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.85fr);
+  gap: 7px;
+  overflow: hidden;
+}
+
+#noteTab.active {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .filter-row {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin: 4px 0 8px;
+  margin: 0;
 }
 
 .month-box,
@@ -119,7 +151,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .total-card {
@@ -153,8 +185,8 @@ body {
 }
 
 .balance-card {
-  margin-bottom: 12px;
-  padding: 12px;
+  margin-bottom: 0;
+  padding: 9px;
   border: 1px solid #cfe2f5;
   border-radius: 14px;
   background: linear-gradient(#ffffff, #eaf8ff);
@@ -164,29 +196,29 @@ body {
 }
 
 .balance-card h3 {
-  margin: 0 0 8px;
+  margin: 0 0 5px;
   font-size: 16px;
 }
 
 .week-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 28px;
+  gap: 4px 28px;
   text-align: left;
   padding: 0 36px;
   font-size: 14px;
 }
 
 .balance-card p {
-  margin: 10px 0 0;
+  margin: 6px 0 0;
   font-size: 13px;
   font-weight: 700;
 }
 
 .money-box,
 .note-small-card {
-  margin-bottom: 12px;
-  padding: 10px;
+  margin-bottom: 0;
+  padding: 8px 10px;
   border: 1px solid #d6e4f3;
   border-radius: 14px;
   background: #ffffff;
@@ -198,7 +230,7 @@ body {
   grid-template-columns: 94px 1fr;
   align-items: center;
   gap: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 h2 {
@@ -218,10 +250,24 @@ h2 {
 .blue-btn { color: #2e66c4; }
 .red-btn { color: #d93618; background: linear-gradient(#ffffff, #fff1f1); border-color: #f1d2d2; }
 
+.money-box {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.note-small-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .money-list {
-  min-height: 82px;
-  max-height: 145px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid #e1ebf5;
   border-radius: 12px;
   padding: 6px;
@@ -276,16 +322,21 @@ textarea {
 }
 
 #expenseNote {
-  height: 128px;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 #noteTab {
-  min-height: calc(100vh - 80px);
-  padding: 42px 10px 8px;
+  padding: 10px 10px 0;
 }
 
 .big-note-card {
-  height: calc(100vh - 132px);
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
   padding: 10px;
   border: 1px solid #d7e3ee;
   border-radius: 18px;
@@ -295,6 +346,8 @@ textarea {
 
 #mainNote {
   height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: 14px;
   border: 1px solid #c9d8e5;
   background: #ffffff;
@@ -325,6 +378,23 @@ textarea {
   color: #0871e8;
   text-decoration: underline;
   font-weight: 700;
+}
+
+
+@media (max-height: 740px) {
+  .app { padding-top: 18px; }
+  .top-tabs { padding-bottom: 5px; margin-bottom: 4px; }
+  #expenseTab.active { gap: 5px; }
+  .month-box, .year-box { height: 40px; }
+  .total-card { min-height: 58px; padding: 9px 11px; }
+  .total-card span { margin-bottom: 3px; }
+  .total-card strong { font-size: 18px; }
+  .balance-card { padding: 7px 10px; }
+  .balance-card h3 { margin-bottom: 4px; font-size: 15px; }
+  .week-grid { font-size: 13px; gap: 3px 18px; padding: 0 24px; }
+  .box-head { margin-bottom: 5px; }
+  .add-btn { height: 36px; font-size: 15px; }
+  #expenseNote { font-size: 14px; }
 }
 
 @media (max-width: 380px) {
